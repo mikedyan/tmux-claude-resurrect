@@ -83,41 +83,44 @@ Each session is a JSONL file named by UUID (e.g., `fa54585f-fb32-4b30-bb3d-2a27e
 
 ## Installation
 
-### 1. Copy the scripts
+One-liner:
 
 ```bash
-mkdir -p ~/.tmux/scripts
-cp scripts/save-claude-sessions.sh ~/.tmux/scripts/
-cp scripts/restore-claude-sessions.sh ~/.tmux/scripts/
-chmod +x ~/.tmux/scripts/save-claude-sessions.sh
-chmod +x ~/.tmux/scripts/restore-claude-sessions.sh
+curl -fsSL https://raw.githubusercontent.com/mikedyan/tmux-claude-resurrect/main/install.sh | bash
 ```
 
-### 2. Add hooks to your `.tmux.conf`
+This will:
+- Download the scripts to `~/.tmux/scripts/`
+- Add the resurrect hooks to your `~/.tmux.conf`
+- Reload your tmux config
 
-Add these lines **before** the TPM initialization line (`run '~/.tmux/plugins/tpm/tpm'`):
-
-```tmux
-# Save/restore Claude Code sessions across tmux restarts
-set -g @resurrect-hook-post-save-all    '~/.tmux/scripts/save-claude-sessions.sh'
-set -g @resurrect-hook-post-restore-all '~/.tmux/scripts/restore-claude-sessions.sh'
-```
-
-### 3. Reload tmux config
-
-```bash
-tmux source-file ~/.tmux.conf
-```
-
-### 4. Name your Claude sessions
-
-In each tmux window running Claude Code, use `/rename` to set a name that matches the tmux window name:
+Then, in each tmux window running Claude Code, rename the session to match the window name:
 
 ```
 > /rename Backend API
 ```
 
-You can verify the current window name in tmux with `Ctrl-b ,` (which also lets you rename it).
+That's it. You can check your tmux window name with `prefix + ,` (which also lets you rename it).
+
+### Manual installation
+
+If you prefer to install manually:
+
+1. Copy the scripts:
+    ```bash
+    mkdir -p ~/.tmux/scripts
+    curl -fsSL https://raw.githubusercontent.com/mikedyan/tmux-claude-resurrect/main/scripts/save-claude-sessions.sh -o ~/.tmux/scripts/save-claude-sessions.sh
+    curl -fsSL https://raw.githubusercontent.com/mikedyan/tmux-claude-resurrect/main/scripts/restore-claude-sessions.sh -o ~/.tmux/scripts/restore-claude-sessions.sh
+    chmod +x ~/.tmux/scripts/save-claude-sessions.sh ~/.tmux/scripts/restore-claude-sessions.sh
+    ```
+
+2. Add these lines to your `.tmux.conf` (before the TPM init line):
+    ```tmux
+    set -g @resurrect-hook-post-save-all    '~/.tmux/scripts/save-claude-sessions.sh'
+    set -g @resurrect-hook-post-restore-all '~/.tmux/scripts/restore-claude-sessions.sh'
+    ```
+
+3. Reload: `tmux source-file ~/.tmux.conf`
 
 ## Usage
 
@@ -167,20 +170,6 @@ In `restore-claude-sessions.sh`, change the resume line to:
 
 ```bash
 tmux send-keys -t "$pane_key" "claude --dangerously-skip-permissions --resume $session_id" Enter
-```
-
-### Custom pane commands on restore
-
-You can add commands to run in specific windows before Claude starts. For example, to switch to a different user in a window named "MyServer":
-
-```bash
-# Add before the Claude restore loop in restore-claude-sessions.sh
-server_pane=$(tmux list-panes -a -F "#{session_name}:#{window_index}.#{pane_index}	#{window_name}" 2>/dev/null \
-  | awk -F'\t' '$2 == "MyServer" { print $1; exit }')
-
-if [ -n "$server_pane" ]; then
-  tmux send-keys -t "$server_pane" "ssh myuser@myserver" Enter
-fi
 ```
 
 ## Limitations
