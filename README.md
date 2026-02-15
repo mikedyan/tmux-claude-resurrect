@@ -4,7 +4,8 @@ Automatically resume Claude Code sessions in the right tmux windows after a tmux
 
 If you use Claude Code across multiple tmux windows — each for a different task or project — this setup ensures every session comes back exactly where it was when tmux restarts, reboots, or crashes.
 
-> **How it works in one sentence:** You name each Claude Code session (with `/rename`) to match its tmux window name. When tmux restarts, the scripts find the session whose name matches each window and resume it there automatically.
+> [!IMPORTANT]
+> **You name each Claude Code session (with `/rename`) to match its tmux window name.** When tmux restarts, the scripts find the session whose name matches each window and resume it there automatically.
 >
 > For example, if your tmux window is called "Backend API", run `/rename Backend API` inside that Claude session. That's the only thing you need to maintain — the rest is automatic.
 
